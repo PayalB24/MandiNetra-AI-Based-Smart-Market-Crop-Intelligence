@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Commodity Price Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        select:disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.loading {
+            background: #95a5a6;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 15px;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+
+        .result.success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 5px solid #28a745;
+        }
+
+        .result.error {
+            background: linear-gradient(135deg, #f8d7da, #f1b0b7);
+            border-left: 5px solid #dc3545;
+        }
+
+        .result h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .price {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-text {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Color coding for different commodities */
+        .commodity-bajra {
+            border-left-color: #27ae60 !important;
+        }
+
+        .commodity-wheat {
+            border-left-color: #f39c12 !important;
+        }
+
+        .commodity-cotton {
+            border-left-color: #3498db !important;
+        }
+
+        .commodity-jowar {
+            border-left-color: #9b59b6 !important;
+        }
+
+        .commodity-rice {
+            border-left-color: #e74c3c !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 Multi-Commodity Price Predictor</h1>
+            <p>Get accurate price predictions for agricultural commodities across Maharashtra</p>
+        </div>
+
+        <div class="form-container">
+            <form id="predictionForm">
+                <div class="form-group">
+                    <label for="commodity">Select Commodity:</label>
+                    <select id="commodity" name="commodity" required>
+                        <option value="">Choose a commodity...</option>
+                        <option value="bajra">🌾 Bajra</option>
+                        <option value="wheat">🌾 Wheat</option>
+                        <option value="cotton">🧵 Cotton</option>
+                        <option value="jowar">🌾 Jowar</option>
+                        <option value="rice">🍚 Rice</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="district">Select District:</label>
+                    <select id="district" name="district" required disabled>
+                        <option value="">First select a commodity</option>
+                    </select>
+                    <div class="info-text" id="districtInfo"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="market">Select Market:</label>
+                    <select id="market" name="market" required disabled>
+                        <option value="">First select a district</option>
+                    </select>
+                    <div class="info-text" id="marketInfo"></div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn" disabled>
+                    Get Price Prediction
+                </button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Predicting price...</p>
+            </div>
+
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const commoditySelect = document.getElementById('commodity');
+        const districtSelect = document.getElementById('district');
+        const marketSelect = document.getElementById('market');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const districtInfo = document.getElementById('districtInfo');
+        const marketInfo = document.getElementById('marketInfo');
+
+        // Reset form function
+        function resetForm() {
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            marketSelect.innerHTML = '<option value="">First select a district</option>';
+            districtSelect.disabled = true;
+            marketSelect.disabled = true;
+            submitBtn.disabled = true;
+            resultDiv.style.display = 'none';
+            districtInfo.textContent = '';
+            marketInfo.textContent = '';
+        }
+
+        // Commodity change handler
+        commoditySelect.addEventListener('change', function () {
+            const commodity = this.value;
+
+            if (commodity) {
+                districtSelect.disabled = false;
+                districtInfo.textContent = 'Loading districts...';
+
+                // Fetch districts specific to this commodity
+                fetch(`/api/districts/${commodity}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        districtSelect.innerHTML = '<option value="">Select District</option>';
+                        data.districts.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district.id;
+                            option.textContent = district.name;
+                            districtSelect.appendChild(option);
+                        });
+                        districtInfo.textContent = `${data.districts.length} districts available for ${commodity}`;
+                    })
+                    .catch(error => {
+                        districtSelect.innerHTML = '<option value="">Error loading districts</option>';
+                        districtInfo.textContent = `Failed: ${error.message}`;
+                    });
+            } else {
+                resetForm();
+            }
+        });
+
+        // District change handler
+        districtSelect.addEventListener('change', function () {
+            const district = this.value;
+
+            if (district) {
+                marketSelect.disabled = false;
+                marketInfo.textContent = 'Loading markets...';
+
+                // Fetch markets for selected district
+                fetch(`/api/markets/${district}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        marketSelect.innerHTML = '<option value="">Select Market</option>';
+                        data.markets.forEach(market => {
+                            const option = document.createElement('option');
+                            option.value = market.id;
+                            option.textContent = market.name;
+                            marketSelect.appendChild(option);
+                        });
+                        marketInfo.textContent = `${data.markets.length} markets available`;
+                    })
+                    .catch(error => {
+                        marketSelect.innerHTML = '<option value="">Error loading markets</option>';
+                        marketInfo.textContent = 'Failed to load markets';
+                        console.error('Error loading markets:', error);
+                    });
+            } else {
+                marketSelect.innerHTML = '<option value="">First select a district</option>';
+                marketSelect.disabled = true;
+                submitBtn.disabled = true;
+                marketInfo.textContent = '';
+            }
+        });
+
+        // Market change handler
+        marketSelect.addEventListener('change', function () {
+            submitBtn.disabled = !(commoditySelect.value && districtSelect.value && marketSelect.value);
+        });
+
+        // Form submission handler
+        document.getElementById('predictionForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Show loading, hide result
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Predicting...';
+
+            const formData = {
+                commodity: commoditySelect.value,
+                district: districtSelect.value,
+                market: marketSelect.value
+            };
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                // Hide loading
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+
+                if (response.ok) {
+                    resultDiv.className = `result success commodity-${formData.commodity}`;
+                    resultDiv.innerHTML = `
+                        <h3>💰 Price Prediction Result</h3>
+                        <div class="price">₹${result.predicted_price}</div>
+                        <div class="details">
+                            <div class="detail-item">
+                                <div class="detail-label">Commodity</div>
+                                <div class="detail-value">${result.commodity_display}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">District</div>
+                                <div class="detail-value">${result.district}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Market</div>
+                                <div class="detail-value">${result.market}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">State</div>
+                                <div class="detail-value">${result.state}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Prediction Date</div>
+                                <div class="detail-value">${result.prediction_date}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Prediction Time</div>
+                                <div class="detail-value">${result.prediction_time}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Prediction Failed</h3>
+                        <p>${result.error || 'Unknown error occurred'}</p>
+                    `;
+                }
+
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Connection Error</h3>
+                    <p>${error.message}</p>
+                `;
+                console.error('Prediction error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Get Price Prediction';
+            }
+        });
+
+        // Initialize form
+        resetForm();
+    </script>
+</body>
+
+</html>

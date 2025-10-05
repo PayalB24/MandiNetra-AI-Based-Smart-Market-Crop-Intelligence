@@ -1,0 +1,202 @@
+.price-predictor-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.header {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #f39c12, #e74c3c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  opacity: 0.9;
+  font-size: 1.1em;
+}
+
+.form-container {
+  padding: 40px;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1em;
+}
+
+select {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 16px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+select:disabled {
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+.btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+}
+
+.btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reset-btn {
+  background: linear-gradient(135deg, #27ae60, #219653);
+  margin-top: 15px;
+}
+
+.result {
+  margin-top: 30px;
+  padding: 30px;
+  border-radius: 15px;
+  animation: slideIn 0.5s ease;
+}
+
+.result.success {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border-left: 5px solid #28a745;
+}
+
+.result.error {
+  background: linear-gradient(135deg, #f8d7da, #f1b0b7);
+  border-left: 5px solid #dc3545;
+}
+
+.result h3 {
+  margin-bottom: 15px;
+  font-size: 1.5em;
+}
+
+.price {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.detail-item {
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.detail-label {
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-bottom: 5px;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.info-text {
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Color coding for different commodities */
+.commodity-bajra { border-left-color: #27ae60 !important; }
+.commodity-wheat { border-left-color: #f39c12 !important; }
+.commodity-cotton { border-left-color: #3498db !important; }
+.commodity-jowar { border-left-color: #9b59b6 !important; }
+.commodity-rice { border-left-color: #e74c3c !important; }
