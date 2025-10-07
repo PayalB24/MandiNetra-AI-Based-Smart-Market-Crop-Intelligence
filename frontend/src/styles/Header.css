@@ -1,12 +1,91 @@
 .app-header {
   position: relative;
 }
+/* Language Switcher Styles */
+.header-language-switcher {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.language-switcher-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem !important;
+}
+
+.language-switcher-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.language-flag {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.language-text {
+  font-weight: 500;
+}
+
+.dropdown-menu {
+  min-width: 180px;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.dropdown-item {
+  border-radius: 0.5rem;
+  margin: 0.1rem 0.3rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  transform: translateX(2px);
+}
+
+.active-language {
+  background: linear-gradient(135deg, #e8f5e8, #d4edda) !important;
+  color: #155724 !important;
+  border-left: 3px solid #28a745;
+}
+
+/* Responsive Language Switcher */
+@media (max-width: 576px) {
+  .header-language-switcher {
+    top: 15px;
+    right: 15px;
+  }
+  
+  .language-switcher-btn {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .language-text {
+    display: none !important;
+  }
+  
+  .dropdown-menu {
+    min-width: 160px;
+  }
+}
+
+/* Ensure dropdown works with Bootstrap */
+.dropdown-toggle::after {
+  margin-left: 0.5em;
+}
+
 
 .hero-section {
-  background: linear-gradient(135deg, 
-    rgba(106, 176, 76, 0.9) 0%, 
-    rgba(86, 156, 56, 0.8) 50%,
-    rgba(66, 136, 36, 0.9) 100%),
+   background:/* linear-gradient(135deg, 
+    rgba(157, 232, 125, 0.9) 0%, 
+    rgba(123, 147, 112, 0.8) 50%,
+    rgba(110, 147, 95, 0.9) 80%), */
     url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2832&q=80') center/cover;
   height: 400px;
   display: flex;

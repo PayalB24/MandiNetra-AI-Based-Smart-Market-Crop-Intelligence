@@ -1,9 +1,56 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/Header.css';
 
 const Header = ({ activeTab, setActiveTab }) => {
+  const { t, i18n } = useTranslation();
+
+  const languages = [
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+    { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'mr', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳' }
+  ];
+
+  const handleLanguageChange = (languageCode) => {
+    i18n.changeLanguage(languageCode);
+  };
+
+  const getCurrentLanguage = () => {
+    return languages.find(lang => lang.code === i18n.language) || languages[0];
+  };
+
   return (
     <header className="app-header">
+      {/* Language Switcher */}
+      <div className="header-language-switcher">
+        <div className="dropdown">
+          <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3">
+            {languages.map((lang) => (
+              <li key={lang.code}>
+                <button
+                  className={`dropdown-item d-flex align-items-center gap-3 py-2 px-3 ${
+                    i18n.language === lang.code ? 'active-language' : ''
+                  }`}
+                  onClick={() => handleLanguageChange(lang.code)}
+                >
+                  <span className="language-flag fs-5">{lang.flag}</span>
+                  <div className="d-flex flex-column text-start">
+                    <span className="fw-semibold">{lang.nativeName}</span>
+                    <small className="text-muted">{lang.name}</small>
+                  </div>
+                  {i18n.language === lang.code && (
+                    <i className="bi bi-check-lg text-success ms-auto fs-6"></i>
+                  )}
+                </button>
+                {lang.code !== languages[languages.length - 1].code && (
+                  <hr className="dropdown-divider my-1" />
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
       {/* Big Hero Image Section */}
       <div className="hero-section">
         <div className="hero-overlay">
@@ -11,17 +58,17 @@ const Header = ({ activeTab, setActiveTab }) => {
             <div className="logo-section">
               <h1 className="main-title">
                 <span className="eye-symbol">👁️</span>
-                MandiNetra
+                {t('header.title')}
               </h1>
-              <p className="tagline">मंडी की आंख | The Eye on the Mandi</p>
-              <p className="subtagline">AI-powered marketplace connecting farmers directly with consumers</p>
+              <p className="tagline">{t('header.tagline')}</p>
+              <p className="subtagline">{t('header.subtagline')}</p>
               
               <div className="hero-buttons">
                 <button className="hero-btn direct-farm">
-                  🌱 Direct from Farm
+                  {t('header.directFarm')}
                 </button>
                 <button className="hero-btn ai-powered">
-                  🤖 AI Powered
+                  {t('header.aiPowered')}
                 </button>
               </div>
             </div>
