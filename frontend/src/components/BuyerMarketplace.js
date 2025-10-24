@@ -12,22 +12,22 @@ const BuyerMarketplace = () => {
   const [error, setError] = useState('');
   const [priceHistory, setPriceHistory] = useState([]);
   const [favorites, setFavorites] = useState([]);
-
-  const COMMODITY_CONFIG = {
-    bajra: { name: 'Bajra', display_name: '🌾 Bajra', color: 'green', icon: '🌾' },
-    wheat: { name: 'Wheat', display_name: '🌾 Wheat', color: 'amber', icon: '🌾' },
-    cotton: { name: 'Cotton', display_name: '🧵 Cotton', color: 'blue', icon: '🧵' },
-    jowar: { name: 'Jowar', display_name: '🌾 Jowar', color: 'purple', icon: '🌾' },
-    rice: { name: 'Rice', display_name: '🍚 Rice', color: 'red', icon: '🍚' }
-  };
+  const [loadingMarkets, setLoadingMarkets] = useState(false);
 
   // Load favorites from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('buyerFavorites');
-    if (saved) setFavorites(JSON.parse(saved));
+    if (saved) {
+      try {
+        setFavorites(JSON.parse(saved));
+      } catch (err) {
+        console.error('Error loading favorites:', err);
+        setFavorites([]);
+      }
+    }
   }, []);
 
-  // Your existing prediction logic
+  // Fetch districts when commodity changes
   useEffect(() => {
     if (commodity) {
       fetchDistricts(commodity);
@@ -39,6 +39,7 @@ const BuyerMarketplace = () => {
     }
   }, [commodity]);
 
+  // Fetch markets when district changes
   useEffect(() => {
     if (district) {
       fetchMarkets(district);
@@ -51,12 +52,30 @@ const BuyerMarketplace = () => {
   const fetchDistricts = async (commodity) => {
     try {
       setError('');
+      setDistricts([]);
+      setDistrict('');
+      setMarkets([]);
+      setMarket('');
+      
       const response = await fetch(`http://127.0.0.1:5000/api/districts/${commodity}`);
-      if (!response.ok) throw new Error('Failed to fetch districts');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to fetch districts: ${response.status}`);
+      }
+      
       const data = await response.json();
-      setDistricts(data.districts);
+      
+      if (data.error) {
+        setError(data.error);
+        setDistricts([]);
+      } else {
+        setDistricts(data.districts || []);
+        if (data.districts.length === 0) {
+          setError(`No districts available for ${commodity}`);
+        }
+      }
     } catch (err) {
-      setError('Error loading districts');
+      setError('Error loading districts: ' + err.message);
       setDistricts([]);
     }
   };
@@ -64,13 +83,32 @@ const BuyerMarketplace = () => {
   const fetchMarkets = async (district) => {
     try {
       setError('');
-      const response = await fetch(`http://127.0.0.1:5000/api/markets/${district}`);
-      if (!response.ok) throw new Error('Failed to fetch markets');
-      const data = await response.json();
-      setMarkets(data.markets);
-    } catch (err) {
-      setError('Error loading markets');
       setMarkets([]);
+      setMarket('');
+      setLoadingMarkets(true);
+      
+      const response = await fetch(`http://127.0.0.1:5000/api/markets/${district}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to fetch markets: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        setError(data.error);
+        setMarkets([]);
+      } else {
+        setMarkets(data.markets || []);
+        if (data.markets.length === 0) {
+          setError(`No markets available for ${district}`);
+        }
+      }
+    } catch (err) {
+      setError('Error loading markets: ' + err.message);
+      setMarkets([]);
+    } finally {
+      setLoadingMarkets(false);
     }
   };
 
@@ -110,6 +148,7 @@ const BuyerMarketplace = () => {
 
   const addToFavorites = () => {
     if (!result) return;
+    
     const newFavorite = {
       id: Date.now(),
       commodity: result.commodity,
@@ -118,9 +157,17 @@ const BuyerMarketplace = () => {
       predictedPrice: result.predicted_price,
       timestamp: new Date().toISOString()
     };
-    const newFavorites = [newFavorite, ...favorites.filter(f => 
+    
+    const newFavorites = [newFavorite, ...favorites.filter(f =>
       !(f.commodity === result.commodity && f.district === result.district && f.market === result.market)
     ).slice(0, 4)];
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('buyerFavorites', JSON.stringify(newFavorites));
+  };
+
+  const removeFromFavorites = (id) => {
+    const newFavorites = favorites.filter(fav => fav.id !== id);
     setFavorites(newFavorites);
     localStorage.setItem('buyerFavorites', JSON.stringify(newFavorites));
   };
@@ -132,6 +179,10 @@ const BuyerMarketplace = () => {
     setDistricts([]);
     setMarkets([]);
     setResult(null);
+    setError('');
+  };
+
+  const clearError = () => {
     setError('');
   };
 
@@ -153,7 +204,10 @@ const BuyerMarketplace = () => {
                   <select
                     id="commodity"
                     value={commodity}
-                    onChange={(e) => setCommodity(e.target.value)}
+                    onChange={(e) => {
+                      setCommodity(e.target.value);
+                      clearError();
+                    }}
                     required
                   >
                     <option value="">Choose a commodity...</option>
@@ -162,6 +216,11 @@ const BuyerMarketplace = () => {
                     <option value="cotton">🧵 Cotton</option>
                     <option value="jowar">🌾 Jowar</option>
                     <option value="rice">🍚 Rice</option>
+                    <option value="chikoo">🥭 Chikoo</option>
+                    <option value="grapes">🍇 Grapes</option>
+                    <option value="mangos">🥭 Mangoes</option>
+                    <option value="orange">🍊 Orange</option>
+                    <option value="papaya">🍈 Papaya</option>
                   </select>
                 </div>
 
@@ -170,7 +229,10 @@ const BuyerMarketplace = () => {
                   <select
                     id="district"
                     value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
+                    onChange={(e) => {
+                      setDistrict(e.target.value);
+                      clearError();
+                    }}
                     required
                     disabled={!commodity}
                   >
@@ -179,6 +241,9 @@ const BuyerMarketplace = () => {
                       <option key={dist.id} value={dist.id}>{dist.name}</option>
                     ))}
                   </select>
+                  {commodity && districts.length === 0 && !error && (
+                    <div className="loading-text">Loading districts...</div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -186,20 +251,30 @@ const BuyerMarketplace = () => {
                   <select
                     id="market"
                     value={market}
-                    onChange={(e) => setMarket(e.target.value)}
+                    onChange={(e) => {
+                      setMarket(e.target.value);
+                      clearError();
+                    }}
                     required
-                    disabled={!district}
+                    disabled={!district || loadingMarkets}
                   >
-                    <option value="">{district ? 'Select Market' : 'First select district'}</option>
+                    <option value="">
+                      {loadingMarkets ? 'Loading markets...' : 
+                       !district ? 'First select district' : 
+                       'Select Market'}
+                    </option>
                     {markets.map((mkt) => (
                       <option key={mkt.id} value={mkt.id}>{mkt.name}</option>
                     ))}
                   </select>
+                  {district && markets.length === 0 && !error && !loadingMarkets && (
+                    <div className="loading-text">No markets available</div>
+                  )}
                 </div>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn predict-btn"
                 disabled={loading || !commodity || !district || !market}
               >
@@ -209,7 +284,11 @@ const BuyerMarketplace = () => {
 
             {error && (
               <div className="error-message">
-                <span>❌</span> {error}
+                <span>❌</span> 
+                <div className="error-content">
+                  <strong>Error:</strong> {error}
+                </div>
+                <button onClick={clearError} className="clear-error" title="Clear error">×</button>
               </div>
             )}
           </div>
@@ -217,14 +296,14 @@ const BuyerMarketplace = () => {
           {/* Results Section */}
           {result && (
             <div className="results-section">
-              <div className={`prediction-card commodity-${commodity}`}>
+              <div className={`prediction-card commodity-${result.commodity}`}>
                 <div className="card-header">
                   <h3>💰 AI Price Prediction</h3>
                   <button onClick={addToFavorites} className="favorite-btn">
                     ⭐ Add to Favorites
                   </button>
                 </div>
-                
+
                 <div className="prediction-price">
                   ₹{result.predicted_price}
                   <span className="price-unit">/quintal</span>
@@ -234,7 +313,7 @@ const BuyerMarketplace = () => {
                   <div className="detail-grid">
                     <div className="detail-item">
                       <span className="detail-label">Commodity</span>
-                      <span className="detail-value">{result.commodity_display}</span>
+                      <span className="detail-value">{result.commodity_display || result.commodity}</span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Market</span>
@@ -269,14 +348,23 @@ const BuyerMarketplace = () => {
                 <div className="favorites-list">
                   {favorites.map(fav => (
                     <div key={fav.id} className="favorite-item">
-                      <span className="fav-commodity">{fav.commodity}</span>
-                      <span className="fav-location">{fav.district}</span>
-                      <span className="fav-price">₹{fav.predictedPrice}</span>
+                      <div className="fav-content">
+                        <span className="fav-commodity">{fav.commodity}</span>
+                        <span className="fav-location">{fav.district} - {fav.market}</span>
+                        <span className="fav-price">₹{fav.predictedPrice}</span>
+                      </div>
+                      <button 
+                        onClick={() => removeFromFavorites(fav.id)} 
+                        className="remove-fav"
+                        title="Remove from favorites"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="empty-state">No favorites yet</p>
+                <p className="empty-state">No favorites yet. Add predictions to see them here.</p>
               )}
             </div>
 
@@ -287,13 +375,14 @@ const BuyerMarketplace = () => {
                 <div className="history-list">
                   {priceHistory.map((pred, index) => (
                     <div key={index} className="history-item">
-                      <span>{pred.commodity} - {pred.district}</span>
-                      <span>₹{pred.predicted_price}</span>
+                      <span className="hist-commodity">{pred.commodity}</span>
+                      <span className="hist-location">{pred.district}</span>
+                      <span className="hist-price">₹{pred.predicted_price}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="empty-state">No prediction history</p>
+                <p className="empty-state">No prediction history. Your recent predictions will appear here.</p>
               )}
             </div>
           </div>
