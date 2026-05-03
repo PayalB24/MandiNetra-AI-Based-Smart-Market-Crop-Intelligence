@@ -10,6 +10,8 @@ import logging
 import random
 import pandas as pd
 
+# ✅ Import chatbot blueprint
+from Mandi_Chatbot.routes.chatbot_routes import chatbot_bp
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +28,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Initialize database
 db = SQLAlchemy(app)
+
+# ✅ Register chatbot blueprint
+app.register_blueprint(chatbot_bp, url_prefix="/chatbot")
 
 # Create uploads directory if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -2706,5 +2711,8 @@ if __name__ == '__main__':
     print(f"   POST /api/price-comparison - Compare prediction vs actual")
     print(f"   GET  /api/price-trend/<commodity> - Get price trend")
     print(f"   GET  /api/market-overview - Market overview")
+    
+    print(f"\n🤖 CHATBOT ENDPOINTS:")
+    print(f"   POST /chatbot/chat - Chat with AI assistant")
     
     app.run(debug=True, port=5000)
